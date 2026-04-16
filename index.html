@@ -1,105 +1,286 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>180日維持コスト比較ツール</title>
-    <style>
-        body { font-family: sans-serif; background-color: #f4f7f6; color: #333; padding: 20px; }
-        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1 { text-align: center; color: #2c3e50; font-size: 1.2rem; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
-        .card { border: 1px solid #ddd; padding: 15px; border-radius: 8px; background: #fafafa; }
-        .card.blue { border-top: 5px solid #3498db; }
-        .card.green { border-top: 5px solid #27ae60; }
-        h2 { font-size: 1rem; margin-top: 0; }
-        label { display: block; margin-top: 10px; font-size: 0.85rem; font-weight: bold; }
-        input { width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        .result-area { margin-top: 20px; padding: 15px; border-radius: 8px; background: #e8f4fd; text-align: center; }
-        .diff { font-size: 1.5rem; font-weight: bold; color: #e74c3c; }
-        .footer { font-size: 0.7rem; color: #777; margin-top: 10px; text-align: center; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MNP 3プラン比較ツール (期間可変・ダークモード対応)</title>
+<style>
+  :root {
+    --bg-color: #121212;
+    --card-bg-color: #1e1e1e;
+    --text-color: #e0e0e0;
+    --primary-color: #bb86fc;
+    --border-color: #333;
+    --accent-color: #03dac6;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 800px;
+  }
+
+  h1 {
+    text-align: center;
+    color: var(--primary-color);
+    font-size: 1.5rem;
+  }
+
+  .settings-card {
+    background-color: var(--card-bg-color);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border-color);
+  }
+
+  .settings-title {
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: var(--accent-color);
+  }
+
+  .plans-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .plan-card {
+    background-color: var(--card-bg-color);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+  }
+
+  .plan-header {
+    border-bottom: 2px solid var(--border-color);
+    margin-bottom: 15px;
+    padding-bottom: 5px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--primary-color);
+  }
+
+  .input-group {
+    margin-bottom: 10px;
+  }
+
+  label {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 0.9rem;
+  }
+
+  input[type="number"], input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background-color: #2a2a2a;
+    color: var(--text-color);
+    font-size: 1rem;
+    box-sizing: border-box;
+  }
+
+  input[type="number"]:focus {
+    border-color: var(--primary-color);
+    outline: none;
+  }
+
+  .result-group {
+    background-color: #2a2a2a;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 15px;
+  }
+
+  .result-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+  }
+
+  .result-label {
+    color: #b0b0b0;
+  }
+
+  .result-value {
+    font-weight: bold;
+  }
+
+  .total-row {
+    border-top: 1px solid var(--border-color);
+    padding-top: 8px;
+    margin-top: 8px;
+    font-size: 1.1rem;
+  }
+
+  .total-label {
+    color: var(--accent-color);
+  }
+
+  .total-value {
+    color: var(--accent-color);
+  }
+</style>
 </head>
 <body>
 
 <div class="container">
-    <h1>📱 180日維持コスト比較</h1>
-    
-    <div class="grid">
-        <div class="card blue">
-            <h2>プランA: キャリアMNP</h2>
-            <label>端末購入費用 (一括/実質総額)</label>
-            <input type="number" id="carrier_device" value="10000" oninput="calculate()">
-            <label>事務手数料</label>
-            <input type="number" id="carrier_admin" value="3850" oninput="calculate()">
-            <label>月額料金 (税込)</label>
-            <input type="number" id="carrier_monthly" value="7000" oninput="calculate()">
-            <label>月額割引/ポイント還元</label>
-            <input type="number" id="carrier_points" value="0" oninput="calculate()">
+  <h1>MNP 3プラン比較ツール</h1>
+
+  <div class="settings-card">
+    <div class="settings-title">共通設定</div>
+    <div class="input-group">
+      <label for="ruleDays">短期解約の基準日数 (例: 180)</label>
+      <input type="number" id="ruleDays" value="180" placeholder="180">
+    </div>
+  </div>
+
+  <div class="plans-container">
+    <div class="plan-card">
+      <div class="plan-header">プラン A</div>
+      <div class="input-group">
+        <label>初期費用 (円)</label>
+        <input type="number" class="initial-cost" value="3850" placeholder="0">
+      </div>
+      <div class="input-group">
+        <label>月額料金 (円)</label>
+        <input type="number" class="monthly-cost" value="990" placeholder="0">
+      </div>
+      <div class="input-group">
+        <label>維持月数</label>
+        <input type="number" class="months" value="6" placeholder="1">
+      </div>
+      
+      <div class="result-group">
+        <div class="result-row">
+          <span class="result-label">維持日数 (約)</span>
+          <span class="result-value"><span class="days-display">180</span> 日</span>
         </div>
-
-        <div class="card green">
-            <h2>プランB: SIMフリー+MVNO</h2>
-            <label>端末購入費用 (Apple/Google等)</label>
-            <input type="number" id="simfree_device" value="150000" oninput="calculate()">
-            <label>事務手数料</label>
-            <input type="number" id="simfree_admin" value="3300" oninput="calculate()">
-            <label>月額料金 (税込)</label>
-            <input type="number" id="simfree_monthly" value="1100" oninput="calculate()">
-            <label>ポイント還元/キャンペーン</label>
-            <input type="number" id="simfree_points" value="0" oninput="calculate()">
+        <div class="result-row total-row">
+          <span class="result-label total-label">合計費用</span>
+          <span class="result-value total-value"><span class="total-display">0</span> 円</span>
         </div>
+      </div>
     </div>
 
-    <div class="result-area">
-        <div id="summary">計算中...</div>
-        <div id="comparison" class="diff"></div>
+    <div class="plan-card">
+      <div class="plan-header">プラン B</div>
+      <div class="input-group">
+        <label>初期費用 (円)</label>
+        <input type="number" class="initial-cost" value="0" placeholder="0">
+      </div>
+      <div class="input-group">
+        <label>月額料金 (円)</label>
+        <input type="number" class="monthly-cost" value="2178" placeholder="0">
+      </div>
+      <div class="input-group">
+        <label>維持月数</label>
+        <input type="number" class="months" value="6" placeholder="1">
+      </div>
+      
+      <div class="result-group">
+        <div class="result-row">
+          <span class="result-label">維持日数 (約)</span>
+          <span class="result-value"><span class="days-display">180</span> 日</span>
+        </div>
+        <div class="result-row total-row">
+          <span class="result-label total-label">合計費用</span>
+          <span class="result-value total-value"><span class="total-display">0</span> 円</span>
+        </div>
+      </div>
     </div>
 
-    <div class="footer">
-        ※維持期間を180日間（約6ヶ月）として計算しています。<br>
-        ※キャリアの解約に伴うポイント失効やペナルティ等は別途考慮してください。
+    <div class="plan-card">
+      <div class="plan-header">プラン C</div>
+      <div class="input-group">
+        <label>初期費用 (円)</label>
+        <input type="number" class="initial-cost" value="3300" placeholder="0">
+      </div>
+      <div class="input-group">
+        <label>月額料金 (円)</label>
+        <input type="number" class="monthly-cost" value="550" placeholder="0">
+      </div>
+      <div class="input-group">
+        <label>維持月数</label>
+        <input type="number" class="months" value="7" placeholder="1">
+      </div>
+      
+      <div class="result-group">
+        <div class="result-row">
+          <span class="result-label">維持日数 (約)</span>
+          <span class="result-value"><span class="days-display">210</span> 日</span>
+        </div>
+        <div class="result-row total-row">
+          <span class="result-label total-label">合計費用</span>
+          <span class="result-value total-value"><span class="total-display">0</span> 円</span>
+        </div>
+      </div>
     </div>
+  </div>
+
 </div>
 
 <script>
-function calculate() {
-    // プランAの計算
-    const aDevice = parseFloat(document.getElementById('carrier_device').value) || 0;
-    const aAdmin = parseFloat(document.getElementById('carrier_admin').value) || 0;
-    const aMonthly = parseFloat(document.getElementById('carrier_monthly').value) || 0;
-    const aPoints = parseFloat(document.getElementById('carrier_points').value) || 0;
-    const totalA = aDevice + aAdmin + (aMonthly * 6) - aPoints;
+  function calculate() {
+    // 基準日数を取得 (デフォルト180)
+    const ruleDaysInput = document.getElementById('ruleDays').value;
+    const ruleDays = parseInt(ruleDaysInput) || 180;
 
-    // プランBの計算
-    const bDevice = parseFloat(document.getElementById('simfree_device').value) || 0;
-    const bAdmin = parseFloat(document.getElementById('simfree_admin').value) || 0;
-    const bMonthly = parseFloat(document.getElementById('simfree_monthly').value) || 0;
-    const bPoints = parseFloat(document.getElementById('simfree_points').value) || 0;
-    const totalB = bDevice + bAdmin + (bMonthly * 6) - bPoints;
+    // 全プランのカードを取得
+    const planCards = document.querySelectorAll('.plan-card');
 
-    // 表示の更新
-    document.getElementById('summary').innerHTML = 
-        `180日間の総支払額:<br>` +
-        `キャリア案: <strong>¥${totalA.toLocaleString()}</strong> / ` +
-        `SIMフリー案: <strong>¥${totalB.toLocaleString()}</strong>`;
+    planCards.forEach(card => {
+      // 各プランの入力を取得
+      const initialCost = parseInt(card.querySelector('.initial-cost').value) || 0;
+      const monthlyCost = parseInt(card.querySelector('.monthly-cost').value) || 0;
+      const months = parseInt(card.querySelector('.months').value) || 0;
 
-    const diff = totalA - totalB;
-    if (diff > 0) {
-        document.getElementById('comparison').innerHTML = `SIMフリー案が ¥${Math.abs(diff).toLocaleString()} お得！`;
-        document.getElementById('comparison').style.color = "#27ae60";
-    } else if (diff < 0) {
-        document.getElementById('comparison').innerHTML = `キャリアMNP案が ¥${Math.abs(diff).toLocaleString()} お得！`;
-        document.getElementById('comparison').style.color = "#3498db";
-    } else {
-        document.getElementById('comparison').innerHTML = `どちらも同額です`;
-        document.getElementById('comparison').style.color = "#333";
-    }
-}
+      // 計算
+      const days = months * 30; // 簡易的に1ヶ月30日で計算
+      const total = initialCost + (monthlyCost * months);
 
-// 初回計算
-calculate();
+      // 結果を表示
+      const daysDisplay = card.querySelector('.days-display');
+      const totalDisplay = card.querySelector('.total-display');
+
+      daysDisplay.innerText = days;
+      totalDisplay.innerText = total.toLocaleString(); // カンマ区切り
+
+      // 基準日数との比較で色を変える
+      if (days < ruleDays) {
+        // 基準日未満なら警告色 (赤系)
+        daysDisplay.style.color = '#ff6b6b'; 
+        daysDisplay.parentNode.style.fontWeight = 'bold';
+      } else {
+        // 基準日以上なら通常色
+        daysDisplay.style.color = 'var(--text-color)';
+        daysDisplay.parentNode.style.fontWeight = 'normal';
+      }
+    });
+  }
+
+  // すべての入力項目にイベントリスナーを追加
+  const inputs = document.querySelectorAll('input');
+  inputs.forEach(input => {
+    input.addEventListener('input', calculate);
+  });
+
+  // 初期計算
+  calculate();
 </script>
 
 </body>
