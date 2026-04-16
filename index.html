@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MNP 3プラン比較ツール (期間可変・ダークモード対応)</title>
+<title>MNP 3プラン比較 (端末代込)</title>
 <style>
   :root {
     --bg-color: #121212;
@@ -12,54 +12,35 @@
     --primary-color: #bb86fc;
     --border-color: #333;
     --accent-color: #03dac6;
+    --warn-color: #ff6b6b;
   }
 
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
     background-color: var(--bg-color);
     color: var(--text-color);
     margin: 0;
-    padding: 20px;
+    padding: 15px;
     display: flex;
     justify-content: center;
   }
 
-  .container {
-    width: 100%;
-    max-width: 800px;
-  }
-
-  h1 {
-    text-align: center;
-    color: var(--primary-color);
-    font-size: 1.5rem;
-  }
+  .container { width: 100%; max-width: 800px; }
+  h1 { text-align: center; color: var(--primary-color); font-size: 1.3rem; }
 
   .settings-card {
     background-color: var(--card-bg-color);
     border-radius: 12px;
-    padding: 20px;
+    padding: 15px;
     margin-bottom: 20px;
     border: 1px solid var(--border-color);
-  }
-
-  .settings-title {
-    font-size: 1.1rem;
-    font-weight: bold;
-    margin-bottom: 15px;
-    color: var(--accent-color);
-  }
-
-  .plans-container {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
   }
 
   .plan-card {
     background-color: var(--card-bg-color);
     border-radius: 12px;
-    padding: 20px;
+    padding: 15px;
+    margin-bottom: 15px;
     border: 1px solid var(--border-color);
   }
 
@@ -67,22 +48,21 @@
     border-bottom: 2px solid var(--border-color);
     margin-bottom: 15px;
     padding-bottom: 5px;
-    font-size: 1.2rem;
     font-weight: bold;
     color: var(--primary-color);
   }
 
-  .input-group {
+  .input-row {
+    display: flex;
+    gap: 10px;
     margin-bottom: 10px;
   }
 
-  label {
-    display: block;
-    margin-bottom: 4px;
-    font-size: 0.9rem;
-  }
+  .input-group { flex: 1; }
 
-  input[type="number"], input[type="text"] {
+  label { display: block; margin-bottom: 4px; font-size: 0.8rem; color: #aaa; }
+
+  input {
     width: 100%;
     padding: 10px;
     border-radius: 6px;
@@ -93,195 +73,161 @@
     box-sizing: border-box;
   }
 
-  input[type="number"]:focus {
-    border-color: var(--primary-color);
-    outline: none;
-  }
-
   .result-group {
     background-color: #2a2a2a;
-    padding: 15px;
+    padding: 12px;
     border-radius: 8px;
-    margin-top: 15px;
+    margin-top: 10px;
   }
 
-  .result-row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 8px;
-    font-size: 0.95rem;
-  }
-
-  .result-label {
-    color: #b0b0b0;
-  }
-
-  .result-value {
-    font-weight: bold;
-  }
-
+  .result-row { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.9rem; }
   .total-row {
     border-top: 1px solid var(--border-color);
     padding-top: 8px;
-    margin-top: 8px;
+    margin-top: 5px;
     font-size: 1.1rem;
+    font-weight: bold;
   }
-
-  .total-label {
-    color: var(--accent-color);
-  }
-
-  .total-value {
-    color: var(--accent-color);
-  }
+  .total-value { color: var(--accent-color); }
 </style>
 </head>
 <body>
 
 <div class="container">
-  <h1>MNP 3プラン比較ツール</h1>
+  <h1>MNP 比較 (端末代込)</h1>
 
   <div class="settings-card">
-    <div class="settings-title">共通設定</div>
-    <div class="input-group">
-      <label for="ruleDays">短期解約の基準日数 (例: 180)</label>
-      <input type="number" id="ruleDays" value="180" placeholder="180">
-    </div>
+    <label>短期解約の基準日数 (例: 180, 211)</label>
+    <input type="number" id="ruleDays" value="180" oninput="calculate()">
   </div>
 
-  <div class="plans-container">
+  <div id="plans">
     <div class="plan-card">
       <div class="plan-header">プラン A</div>
-      <div class="input-group">
-        <label>初期費用 (円)</label>
-        <input type="number" class="initial-cost" value="3850" placeholder="0">
+      <div class="input-row">
+        <div class="input-group">
+          <label>端末代金 (円)</label>
+          <input type="number" class="device-cost" value="1" oninput="calculate()">
+        </div>
+        <div class="input-group">
+          <label>事務手数料 (円)</label>
+          <input type="number" class="admin-cost" value="3850" oninput="calculate()">
+        </div>
       </div>
-      <div class="input-group">
-        <label>月額料金 (円)</label>
-        <input type="number" class="monthly-cost" value="990" placeholder="0">
+      <div class="input-row">
+        <div class="input-group">
+          <label>月額 (円)</label>
+          <input type="number" class="monthly-cost" value="990" oninput="calculate()">
+        </div>
+        <div class="input-group">
+          <label>維持月数</label>
+          <input type="number" class="months" value="7" oninput="calculate()">
+        </div>
       </div>
-      <div class="input-group">
-        <label>維持月数</label>
-        <input type="number" class="months" value="6" placeholder="1">
-      </div>
-      
       <div class="result-group">
         <div class="result-row">
-          <span class="result-label">維持日数 (約)</span>
-          <span class="result-value"><span class="days-display">180</span> 日</span>
+          <span>維持日数 (目安)</span>
+          <span class="days-display">210 日</span>
         </div>
         <div class="result-row total-row">
-          <span class="result-label total-label">合計費用</span>
-          <span class="result-value total-value"><span class="total-display">0</span> 円</span>
+          <span>総合計 (税込)</span>
+          <span class="total-value"><span class="total-display">0</span> 円</span>
         </div>
       </div>
     </div>
 
     <div class="plan-card">
       <div class="plan-header">プラン B</div>
-      <div class="input-group">
-        <label>初期費用 (円)</label>
-        <input type="number" class="initial-cost" value="0" placeholder="0">
+      <div class="input-row">
+        <div class="input-group">
+          <label>端末代金 (円)</label>
+          <input type="number" class="device-cost" value="22000" oninput="calculate()">
+        </div>
+        <div class="input-group">
+          <label>事務手数料 (円)</label>
+          <input type="number" class="admin-cost" value="0" oninput="calculate()">
+        </div>
       </div>
-      <div class="input-group">
-        <label>月額料金 (円)</label>
-        <input type="number" class="monthly-cost" value="2178" placeholder="0">
+      <div class="input-row">
+        <div class="input-group">
+          <label>月額 (円)</label>
+          <input type="number" class="monthly-cost" value="2178" oninput="calculate()">
+        </div>
+        <div class="input-group">
+          <label>維持月数</label>
+          <input type="number" class="months" value="6" oninput="calculate()">
+        </div>
       </div>
-      <div class="input-group">
-        <label>維持月数</label>
-        <input type="number" class="months" value="6" placeholder="1">
-      </div>
-      
       <div class="result-group">
         <div class="result-row">
-          <span class="result-label">維持日数 (約)</span>
-          <span class="result-value"><span class="days-display">180</span> 日</span>
+          <span>維持日数 (目安)</span>
+          <span class="days-display">180 日</span>
         </div>
         <div class="result-row total-row">
-          <span class="result-label total-label">合計費用</span>
-          <span class="result-value total-value"><span class="total-display">0</span> 円</span>
+          <span>総合計 (税込)</span>
+          <span class="total-value"><span class="total-display">0</span> 円</span>
         </div>
       </div>
     </div>
 
     <div class="plan-card">
       <div class="plan-header">プラン C</div>
-      <div class="input-group">
-        <label>初期費用 (円)</label>
-        <input type="number" class="initial-cost" value="3300" placeholder="0">
+      <div class="input-row">
+        <div class="input-group">
+          <label>端末代金 (円)</label>
+          <input type="number" class="device-cost" value="0" oninput="calculate()">
+        </div>
+        <div class="input-group">
+          <label>事務手数料 (円)</label>
+          <input type="number" class="admin-cost" value="3300" oninput="calculate()">
+        </div>
       </div>
-      <div class="input-group">
-        <label>月額料金 (円)</label>
-        <input type="number" class="monthly-cost" value="550" placeholder="0">
+      <div class="input-row">
+        <div class="input-group">
+          <label>月額 (円)</label>
+          <input type="number" class="monthly-cost" value="550" oninput="calculate()">
+        </div>
+        <div class="input-group">
+          <label>維持月数</label>
+          <input type="number" class="months" value="12" oninput="calculate()">
+        </div>
       </div>
-      <div class="input-group">
-        <label>維持月数</label>
-        <input type="number" class="months" value="7" placeholder="1">
-      </div>
-      
       <div class="result-group">
         <div class="result-row">
-          <span class="result-label">維持日数 (約)</span>
-          <span class="result-value"><span class="days-display">210</span> 日</span>
+          <span>維持日数 (目安)</span>
+          <span class="days-display">360 日</span>
         </div>
         <div class="result-row total-row">
-          <span class="result-label total-label">合計費用</span>
-          <span class="result-value total-value"><span class="total-display">0</span> 円</span>
+          <span>総合計 (税込)</span>
+          <span class="total-value"><span class="total-display">0</span> 円</span>
         </div>
       </div>
     </div>
   </div>
-
 </div>
 
 <script>
-  function calculate() {
-    // 基準日数を取得 (デフォルト180)
-    const ruleDaysInput = document.getElementById('ruleDays').value;
-    const ruleDays = parseInt(ruleDaysInput) || 180;
+function calculate() {
+  const ruleDays = parseInt(document.getElementById('ruleDays').value) || 0;
+  const cards = document.querySelectorAll('.plan-card');
 
-    // 全プランのカードを取得
-    const planCards = document.querySelectorAll('.plan-card');
+  cards.forEach(card => {
+    const device = parseInt(card.querySelector('.device-cost').value) || 0;
+    const admin = parseInt(card.querySelector('.admin-cost').value) || 0;
+    const monthly = parseInt(card.querySelector('.monthly-cost').value) || 0;
+    const months = parseInt(card.querySelector('.months').value) || 0;
 
-    planCards.forEach(card => {
-      // 各プランの入力を取得
-      const initialCost = parseInt(card.querySelector('.initial-cost').value) || 0;
-      const monthlyCost = parseInt(card.querySelector('.monthly-cost').value) || 0;
-      const months = parseInt(card.querySelector('.months').value) || 0;
+    const total = device + admin + (monthly * months);
+    const days = months * 30;
 
-      // 計算
-      const days = months * 30; // 簡易的に1ヶ月30日で計算
-      const total = initialCost + (monthlyCost * months);
-
-      // 結果を表示
-      const daysDisplay = card.querySelector('.days-display');
-      const totalDisplay = card.querySelector('.total-display');
-
-      daysDisplay.innerText = days;
-      totalDisplay.innerText = total.toLocaleString(); // カンマ区切り
-
-      // 基準日数との比較で色を変える
-      if (days < ruleDays) {
-        // 基準日未満なら警告色 (赤系)
-        daysDisplay.style.color = '#ff6b6b'; 
-        daysDisplay.parentNode.style.fontWeight = 'bold';
-      } else {
-        // 基準日以上なら通常色
-        daysDisplay.style.color = 'var(--text-color)';
-        daysDisplay.parentNode.style.fontWeight = 'normal';
-      }
-    });
-  }
-
-  // すべての入力項目にイベントリスナーを追加
-  const inputs = document.querySelectorAll('input');
-  inputs.forEach(input => {
-    input.addEventListener('input', calculate);
+    const daysDisp = card.querySelector('.days-display');
+    daysDisp.innerText = days + " 日";
+    daysDisp.style.color = days < ruleDays ? "var(--warn-color)" : "var(--text-color)";
+    
+    card.querySelector('.total-display').innerText = total.toLocaleString();
   });
-
-  // 初期計算
-  calculate();
+}
+window.onload = calculate;
 </script>
-
 </body>
 </html>
